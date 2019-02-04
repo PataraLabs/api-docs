@@ -10,12 +10,12 @@
     "x-logo": {
       "url": "https://avatars3.githubusercontent.com/u/40502520?s=400&u=a8936658344fdf66bd78f5a64bfb89b6a01340c1&v=4"
     },
-    "description": "Patara provides a simple REST API to programmatically integrate decentralized exchange functionality in your applications. You can use the API endpoints to read and create orders and trades. JSON is returned by all API responses. <br><br> _This documentations is in progress._"
+    "description": "Patara provides a simple REST API to programmatically integrate decentralized exchange functionality in your applications. You can use the API endpoints to read and create orders and trades. JSON is returned by all API responses. <br><br> _This documentation is in progress._"
   },
   "tags": [
     {
       "name": "Orders",
-      "description": "Operations on order"
+      "description": " \n\n* All requests and responses should be of application/json content type. \n\n* All token amounts are sent in amounts of the smallest level of precision (base units). (e.g if a token has 18 decimal places, selling 1 token would show up as selling '1000000000000000000' units by this API). \n\n* All addresses are sent as lower-case (non-checksummed) Ethereum addresses with the 0x prefix. \n\n* All parameters are to be written in lowerCamelCase."
     }
   ],
   "servers": [
@@ -24,49 +24,35 @@
     }
   ],
   "paths": {
-    "/order/{id}": {
-      "parameters": [
-        {
-          "name": "pretty_print",
-          "in": "query",
-          "description": "Pretty print response",
-          "schema": {
-            "type": "boolean"
-          }
-        }
-      ],
+    "/order/{orderHash}": {
       "get": {
         "tags": [
           "Orders"
         ],
-        "summary": "Get order by id",
-        "description": "Some description of the operation.\nYou can use `markdown` here.\n",
+        "summary": "getOrder",
+        "description": "Retrieves the 0x order with meta info that is associated with the hash.",
         "operationId": "getUserByName",
         "parameters": [
           {
-            "name": "id",
+            "name": "orderHash",
             "in": "path",
-            "description": "The name that needs to be fetched",
+            "description": "The hash of the desired 0x order.",
             "required": true,
             "schema": {
               "type": "string"
             }
           },
           {
-            "name": "with_email",
+            "name": "networkId",
             "in": "query",
-            "description": "Filter users without email",
+            "description": "The id of the Ethereum network",
             "schema": {
-              "type": "boolean"
+              "type": "number",
+              "default": 42
             }
           }
         ],
         "security": [
-          {
-            "main_auth": [
-              "read:users"
-            ]
-          },
           {
             "api_key": []
           }
@@ -77,20 +63,38 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/signedOrderSchema"
                 },
                 "example": {
-                  "username": "user1",
-                  "email": "user@example.com"
+                  "makerAddress": "0x9e56625509c2f60af937f23b7b532600390e8c8b",
+                  "takerAddress": "0xa2b31dacf30a9c50ca473337c01d8a201ae33e32",
+                  "feeRecipientAddress": "0xb046140686d052fff581f63f8136cce132e857da",
+                  "senderAddress": "0xa2b31dacf30a9c50ca473337c01d8a201ae33e32",
+                  "makerAssetAmount": "10000000000000000",
+                  "takerAssetAmount": "20000000000000000",
+                  "makerFee": "100000000000000",
+                  "takerFee": "200000000000000",
+                  "expirationTimeSeconds": "1532560590",
+                  "salt": "1532559225",
+                  "makerAssetData": "0xf47261b0000000000000000000000000e41d2489571d322189246dafa5ebde1f4699f498",
+                  "takerAssetData": "0x02571792000000000000000000000000371b13d97f4bf77d724e78c16b7dc74099f40e840000000000000000000000000000000000000000000000000000000000000063",
+                  "exchangeAddress": "0x12459c951127e0c374ff9105dda097662a027093",
+                  "signature": "0x012761a3ed31b43c8780e905a260a35faefcc527be7516aa11c0256729b5b351bc33"
                 }
               }
             }
           },
-          "403": {
-            "description": "Forbidden"
+          "400": {
+            "description": "Validation error"
           },
           "404": {
-            "description": "User not found"
+            "description": "Not found"
+          },
+          "429": {
+            "description": "Too many requests - Rate limit exceeded"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -100,23 +104,58 @@
         "tags": [
           "Orders"
         ],
-        "summary": "Post an order",
-        "description": "Receive the exact message you've sent",
+        "summary": "postOrder",
+        "description": "Submit a signed order to the relayer.",
         "operationId": "postOrder",
         "security": [
           {
             "api_key": []
-          },
-          {
-            "basic_auth": []
           }
         ],
+        "parameters": [
+          {
+            "name": "networkId",
+            "in": "query",
+            "description": "The id of the Ethereum network",
+            "schema": {
+              "type": "number",
+              "default": 42
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "A valid signed 0x order based on the schema.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/signedOrderSchema"
+              },
+              "example": {
+                "makerAddress": "0x9e56625509c2f60af937f23b7b532600390e8c8b",
+                "takerAddress": "0xa2b31dacf30a9c50ca473337c01d8a201ae33e32",
+                "feeRecipientAddress": "0xb046140686d052fff581f63f8136cce132e857da",
+                "senderAddress": "0xa2b31dacf30a9c50ca473337c01d8a201ae33e32",
+                "makerAssetAmount": "10000000000000000",
+                "takerAssetAmount": "20000000000000000",
+                "makerFee": "100000000000000",
+                "takerFee": "200000000000000",
+                "expirationTimeSeconds": "1532560590",
+                "salt": "1532559225",
+                "makerAssetData": "0xf47261b0000000000000000000000000e41d2489571d322189246dafa5ebde1f4699f498",
+                "takerAssetData": "0x02571792000000000000000000000000371b13d97f4bf77d724e78c16b7dc74099f40e840000000000000000000000000000000000000000000000000000000000000063",
+                "exchangeAddress": "0x12459c951127e0c374ff9105dda097662a027093",
+                "signature": "0x012761a3ed31b43c8780e905a260a35faefcc527be7516aa11c0256729b5b351bc33"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "OK",
             "headers": {
               "X-Rate-Limit": {
-                "description": "calls per hour allowed by the user",
+                "description": "The maximum number of requests you're permitted to make per hour.",
                 "schema": {
                   "type": "integer",
                   "format": "int32"
@@ -133,7 +172,7 @@
                 },
                 "examples": {
                   "response": {
-                    "value": "Hello world!"
+                    "value": "Order posted!"
                   }
                 }
               },
@@ -148,25 +187,19 @@
                 }
               }
             }
-          }
-        },
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "string",
-                "example": "Hello world!"
-              }
-            },
-            "application/xml": {
-              "schema": {
-                "type": "string",
-                "example": "Hello world!"
-              }
-            }
           },
-          "description": "Order payload",
-          "required": true
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "429": {
+            "description": "Too many requests - Rate limit exceeded"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
         },
         "x-code-samples": [
           {
@@ -183,6 +216,98 @@
   },
   "components": {
     "schemas": {
+      "numberSchema": {
+        "type": "string",
+        "pattern": "^\\\\d+(\\\\.\\\\d+)?$"
+      },
+      "addressSchema": {
+        "type": "string",
+        "pattern": "^0x[0-9a-f]{40}$"
+      },
+      "hexSchema": {
+        "type": "string",
+        "pattern": "^0x(([0-9a-f][0-9a-f])+)?$"
+      },
+      "orderHashSchema": {
+        "type": "string",
+        "pattern": "^0x[0-9a-fA-F]{64}$"
+      },
+      "orderSchema": {
+        "properties": {
+          "makerAddress": {
+            "$ref": "#/components/schemas/addressSchema"
+          },
+          "takerAddress": {
+            "$ref": "#/components/schemas/addressSchema"
+          },
+          "makerFee": {
+            "$ref": "#/components/schemas/numberSchema"
+          },
+          "takerFee": {
+            "$ref": "#/components/schemas/numberSchema"
+          },
+          "senderAddress": {
+            "$ref": "#/components/schemas/addressSchema"
+          },
+          "makerAssetAmount": {
+            "$ref": "#/components/schemas/numberSchema"
+          },
+          "takerAssetAmount": {
+            "$ref": "#/components/schemas/numberSchema"
+          },
+          "makerAssetData": {
+            "$ref": "#/components/schemas/hexSchema"
+          },
+          "takerAssetData": {
+            "$ref": "#/components/schemas/hexSchema"
+          },
+          "salt": {
+            "$ref": "#/components/schemas/numberSchema"
+          },
+          "exchangeAddress": {
+            "$ref": "#/components/schemas/addressSchema"
+          },
+          "feeRecipientAddress": {
+            "$ref": "#/components/schemas/addressSchema"
+          },
+          "expirationTimeSeconds": {
+            "$ref": "#/components/schemas/numberSchema"
+          }
+        },
+        "required": [
+          "makerAddress",
+          "takerAddress",
+          "makerFee",
+          "takerFee",
+          "senderAddress",
+          "makerAssetAmount",
+          "takerAssetAmount",
+          "makerAssetData",
+          "takerAssetData",
+          "salt",
+          "exchangeAddress",
+          "feeRecipientAddress",
+          "expirationTimeSeconds"
+        ],
+        "type": "object"
+      },
+      "signedOrderSchema": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/orderSchema"
+          },
+          {
+            "properties": {
+              "signature": {
+                "$ref": "#/components/schemas/hexSchema"
+              }
+            },
+            "required": [
+              "signature"
+            ]
+          }
+        ]
+      },
       "Email": {
         "description": "User email address",
         "type": "string",
@@ -226,26 +351,10 @@
       }
     },
     "securitySchemes": {
-      "main_auth": {
-        "type": "oauth2",
-        "flows": {
-          "implicit": {
-            "authorizationUrl": "http://example.com/api/oauth/dialog",
-            "scopes": {
-              "read:users": "read users info",
-              "write:users": "modify or remove users"
-            }
-          }
-        }
-      },
       "api_key": {
         "type": "apiKey",
         "in": "header",
         "name": "api_key"
-      },
-      "basic_auth": {
-        "type": "http",
-        "scheme": "basic"
       }
     }
   }
