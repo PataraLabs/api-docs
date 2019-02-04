@@ -1,7 +1,7 @@
-$form = new \API\Entities\Echo();
+$form = new \API\Entities\Order();
 $form->setMessage("Hello World!");
 try {
-    $pet = $client->echo()->post($form);
+    $pet = $client->order()->post($form);
 } catch (UnprocessableEntityException $e) {
     var_dump($e->getErrors());
 }

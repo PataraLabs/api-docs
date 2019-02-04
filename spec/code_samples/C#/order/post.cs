@@ -1,6 +1,6 @@
-API.v1.Echo echo = new API.v1.Echo();
-echo.message = "Hello World!");
-EchoResponse response = echo.post();
+API.v1.Order order = new API.v1.Order();
+order.message = "Hello World!");
+OrderResponse response = order.post();
 if (response.statusCode == HttpStatusCode.Created)
 {
   // Success

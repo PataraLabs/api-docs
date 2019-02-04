@@ -6,55 +6,40 @@ info:
   version: '1.0.0' # Your API version
   # It can be any string but it is better to use semantic versioning: http://semver.org/
   # Warning: OpenAPI require version to be string, but without quotation YAML can recognize it as number.
-  
-  title: Example.com # Replace with your API title
+
+  title: Patara API Documentation # Replace with your API title
   # Keep it simple. Don't add "API" or version at the end of the string.
 
-  termsOfService: 'https://example.com/terms/' # [Optional] Replace with an URL to your ToS
-  contact:
-    email: contact@example.com # [Optional] Replace with your contact email
-    url: 'http://example.com/contact' # [Optional] Replace with link to your contact form
+  # termsOfService: 'https://example.com/terms/' # [Optional] Replace with an URL to your ToS
+  # contact:
+  #   email: contact@example.com # [Optional] Replace with your contact email
+  #   url: 'http://example.com/contact' # [Optional] Replace with link to your contact form
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
   x-logo:
-    url: 'https://apis.guru/openapi-template/logo.png'
-  
-  # Describe your API here, you can use GFM (https://guides.github.com/features/mastering-markdown) here
-  description: |
-    This is an **example** API to demonstrate features of OpenAPI specification
-    # Introduction
-    This specification is intended to to be a good starting point for describing your API in 
-    [OpenAPI/Swagger format](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md).
-    It also demonstrates features of [generator-openapi-repo](https://github.com/Rebilly/generator-openapi-repo) tool and 
-    [ReDoc](https://github.com/Rebilly/ReDoc) documentation engine. So beyond the standard OpenAPI syntax we use a few 
-    [vendor extensions](https://github.com/Rebilly/ReDoc/blob/master/docs/redoc-vendor-extensions.md).
-
-    # OpenAPI Specification
-    The goal of The OpenAPI Specification is to define a standard, language-agnostic interface to REST APIs which
-    allows both humans and computers to discover and understand the capabilities of the service without access to source
-    code, documentation, or through network traffic inspection. When properly defined via OpenAPI, a consumer can 
-    understand and interact with the remote service with a minimal amount of implementation logic. Similar to what
-    interfaces have done for lower-level programming, OpenAPI removes the guesswork in calling the service.
-externalDocs:
-  description: Find out how to create Github repo for your OpenAPI spec.
-  url: 'https://github.com/Rebilly/generator-openapi-repo'
+    url: 'https://avatars3.githubusercontent.com/u/40502520?s=400&u=a8936658344fdf66bd78f5a64bfb89b6a01340c1&v=4'
+  description:
+    Patara provides a simple REST API to programmatically integrate decentralized exchange functionality in your applications.
+    You can use the API endpoints to read and create orders and trades. JSON is returned by all API responses.
+    <br><br>
+    _This documentations is in progress._
+# externalDocs:
+#   description: Find out how to create Github repo for your OpenAPI spec.
+#   url: 'https://github.com/Rebilly/generator-openapi-repo'
 
 # A list of tags used by the specification with additional metadata.
 # The order of the tags can be used to reflect on their order by the parsing tools.
 tags:
-  - name: Echo
-    description: Example echo operations
-  - name: User
-    description: Operations about user
+  - name: Orders
+    description: Operations on order
 servers:
-  - url: 'http://example.com/api/v1'
-  - url: 'https://example.com/api/v1'
+  - url: 'http://patara.io/api/v2'
 
 # Holds the relative paths to the individual endpoints. The path is appended to the
-# basePath in order to construct the full URL. 
+# basePath in order to construct the full URL.
 paths:
-  '/users/{username}': # path parameter in curly braces
+  '/order/{id}': # path parameter in curly braces
 
     # parameters list that are used with each operation for this path
     parameters:
@@ -65,22 +50,22 @@ paths:
           type: boolean
     get: # documentation for GET operation for this path
       tags:
-        - User
-      
+        - Orders
+
       # summary is up to 120 symbold but we recommend to be shortest as possible
-      summary: Get user by user name
-      
+      summary: Get order by id
+
       # you can use GFM in operation description too: https://guides.github.com/features/mastering-markdown
       description: |
-        Some description of the operation. 
+        Some description of the operation.
         You can use `markdown` here.
-      
+
       # operationId should be unique across the whole specification
       operationId: getUserByName
-      
+
       # list of parameters for the operation
       parameters:
-        - name: username
+        - name: id
           in: path
           description: The name that needs to be fetched
           required: true
@@ -91,7 +76,7 @@ paths:
           description: Filter users without email
           schema:
             type: boolean
-      
+
       # security schemas applied to this operation
       security:
         - main_auth:
@@ -112,47 +97,47 @@ paths:
         '404':
           description: User not found
     # documentation for PUT operation for this path
-    put:
+    # post:
+    #   tags:
+    #     - Orders
+    #   summary: Post new order
+    #   description: This can only be done by the logged in user.
+    #   operationId: postOrder
+    #   # parameters:
+    #   #   - name: id
+    #   #     in: path
+    #   #     description: The name that needs to be updated
+    #   #     required: true
+    #   #     schema:
+    #   #       type: string
+    #   security:
+    #     - main_auth:
+    #         - 'write:users'
+    #   responses:
+    #     '200':
+    #       description: OK
+    #     '400':
+    #       description: Invalid user supplied
+    #     '404':
+    #       description: User not found
+    #   # request body documentation
+    #   requestBody:
+    #     content:
+    #       application/json:
+    #         schema:
+    #           $ref: '#/components/schemas/User'
+    #       application/xml:
+    #         schema:
+    #           $ref: '#/components/schemas/User'
+    #     description: Updated user object
+    #     required: true
+  '/order': # path parameter in curly braces
+    post:
       tags:
-        - User
-      summary: Updated user
-      description: This can only be done by the logged in user.
-      operationId: updateUser
-      parameters:
-        - name: username
-          in: path
-          description: The name that needs to be updated
-          required: true
-          schema:
-            type: string
-      security:
-        - main_auth:
-            - 'write:users'
-      responses:
-        '200':
-          description: OK
-        '400':
-          description: Invalid user supplied
-        '404':
-          description: User not found
-      # request body documentation
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/User'
-        description: Updated user object
-        required: true
-  /echo: # path parameter in curly braces
-    post: # documentation for POST operation for this path
-      tags:
-        - Echo
-      summary: Echo test
+        - Orders
+      summary: Post an order
       description: Receive the exact message you've sent
-      operationId: echo
+      operationId: postOrder
       security:
         - api_key: []
         - basic_auth: []
@@ -191,9 +176,9 @@ paths:
             schema:
               type: string
               example: Hello world!
-        description: Echo payload
+        description: Order payload
         required: true
-        
+
 # An object to hold reusable parts that can be used across the spec
 components:
   schemas:
@@ -240,7 +225,7 @@ components:
             'read:users': read users info
             'write:users': modify or remove users
     api_key:  # security definition name (you can name it as you want)
-      type: apiKey 
+      type: apiKey
       # The following options are specific to apiKey type
       in: header # Where API key will be passed: header or query
       name: api_key # API key parameter name
