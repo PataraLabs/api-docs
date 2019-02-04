@@ -1,0 +1,180 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Patara API Documentation
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+  x-logo:
+    url: 'https://avatars3.githubusercontent.com/u/40502520?s=400&u=a8936658344fdf66bd78f5a64bfb89b6a01340c1&v=4'
+  description: Patara provides a simple REST API to programmatically integrate decentralized exchange functionality in your applications. You can use the API endpoints to read and create orders and trades. JSON is returned by all API responses. <br><br> _This documentations is in progress._
+tags:
+  - name: Orders
+    description: Operations on order
+servers:
+  - url: 'http://patara.io/api/v2'
+paths:
+  '/order/{id}':
+    parameters:
+      - name: pretty_print
+        in: query
+        description: Pretty print response
+        schema:
+          type: boolean
+    get:
+      tags:
+        - Orders
+      summary: Get order by id
+      description: |
+        Some description of the operation.
+        You can use `markdown` here.
+      operationId: getUserByName
+      parameters:
+        - name: id
+          in: path
+          description: The name that needs to be fetched
+          required: true
+          schema:
+            type: string
+        - name: with_email
+          in: query
+          description: Filter users without email
+          schema:
+            type: boolean
+      security:
+        - main_auth:
+            - 'read:users'
+        - api_key: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                username: user1
+                email: user@example.com
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+  /order:
+    post:
+      tags:
+        - Orders
+      summary: Post an order
+      description: Receive the exact message you've sent
+      operationId: postOrder
+      security:
+        - api_key: []
+        - basic_auth: []
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              $ref: '#/components/headers/ExpiresAfter'
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                response:
+                  value: Hello world!
+            application/xml:
+              schema:
+                type: string
+            text/csv:
+              schema:
+                type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              example: Hello world!
+          application/xml:
+            schema:
+              type: string
+              example: Hello world!
+        description: Order payload
+        required: true
+      x-code-samples:
+        - lang: 'C#'
+          source: |
+            API.v1.Order order = new API.v1.Order();
+            order.message = "Hello World!");
+            OrderResponse response = order.post();
+            if (response.statusCode == HttpStatusCode.Created)
+            {
+              // Success
+            }
+            else
+            {
+              // Something wrong -- check response for errors
+              Console.WriteLine(response.getRawResponse());
+            }
+        - lang: PHP
+          source: |
+            $form = new \API\Entities\Order();
+            $form->setMessage("Hello World!");
+            try {
+                $pet = $client->order()->post($form);
+            } catch (UnprocessableEntityException $e) {
+                var_dump($e->getErrors());
+            }
+components:
+  schemas:
+    Email:
+      description: User email address
+      type: string
+      format: test
+      example: john.smith@example.com
+    User:
+      type: object
+      properties:
+        username:
+          description: User supplied username
+          type: string
+          minLength: 4
+          example: John78
+        firstName:
+          description: User first name
+          type: string
+          minLength: 1
+          example: John
+        lastName:
+          description: User last name
+          type: string
+          minLength: 1
+          example: Smith
+        email:
+          $ref: '#/components/schemas/Email'
+  headers:
+    ExpiresAfter:
+      description: date in UTC when token expires
+      schema:
+        type: string
+        format: date-time
+  securitySchemes:
+    main_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: 'http://example.com/api/oauth/dialog'
+          scopes:
+            'read:users': read users info
+            'write:users': modify or remove users
+    api_key:
+      type: apiKey
+      in: header
+      name: api_key
+    basic_auth:
+      type: http
+      scheme: basic
